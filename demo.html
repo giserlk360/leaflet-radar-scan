@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet 雷达扫描插件演示</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- 雷达扫描插件 CSS -->
+    <link rel="stylesheet" href="L.RadarScan.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #00ff00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            color: #bdc3c7;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 120px);
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #00ff00;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .control-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-panel h3 {
+            margin: 0 0 15px 0;
+            color: #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ff00;
+            font-size: 12px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            outline: none;
+            border-radius: 2px;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #00ff00;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .control-group select {
+            width: 100%;
+            background: #333;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+            padding: 5px;
+            font-size: 12px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+            flex: 1;
+            min-width: 60px;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .value-display {
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .info-panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .info-label {
+            color: #888;
+        }
+        
+        .info-value {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-indicator.active {
+            background: #00ff00;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        
+        .status-indicator.inactive {
+            background: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 200px;
+                order: 2;
+            }
+            
+            .map-container {
+                height: calc(100vh - 320px);
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>L.RadarScan - Leaflet 雷达扫描插件</h1>
+        <p>基于 SVG 的高性能雷达扫描效果，支持经典雷达屏幕显示和地图缩放自适应</p>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <!-- 雷达控制面板 -->
+            <div class="control-panel">
+                <h3>雷达控制</h3>
+                
+                <div class="control-group">
+                    <div class="button-group">
+                        <button id="startBtn" class="btn">启动</button>
+                        <button id="stopBtn" class="btn">停止</button>
+                        <button id="resetBtn" class="btn">重置</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>扫描速度: <span id="speedValue" class="value-display">3.0s</span></label>
+                    <input type="range" id="speedSlider" min="1000" max="8000" value="3000" step="500">
+                </div>
+
+                <div class="control-group">
+                    <label>扫描半径: <span id="radiusValue" class="value-display">1000m</span></label>
+                    <input type="range" id="radiusSlider" min="500" max="5000" value="1000" step="100">
+                </div>
+
+                <div class="control-group">
+                    <label>扇形角度: <span id="angleValue" class="value-display">60°</span></label>
+                    <input type="range" id="angleSlider" min="30" max="120" value="60" step="10">
+                </div>
+
+                <div class="control-group">
+                    <label>显示选项</label>
+                    <select id="displayMode">
+                        <option value="full">完整网格</option>
+                        <option value="rings">仅同心圆</option>
+                        <option value="lines">仅方位线</option>
+                        <option value="none">无网格</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 样式控制面板 -->
+            <div class="control-panel">
+                <h3>样式定制</h3>
+
+                <div class="control-group">
+                    <label>雷达颜色主题</label>
+                    <select id="colorTheme">
+                        <option value="green">经典绿色</option>
+                        <option value="blue">海军蓝</option>
+                        <option value="red">警戒红</option>
+                        <option value="orange">橙色</option>
+                        <option value="purple">紫色</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>外圆样式</label>
+                    <select id="backgroundStyle">
+                        <option value="solid">实线</option>
+                        <option value="dashed">虚线</option>
+                        <option value="dotted">点线</option>
+                        <option value="thick">粗线</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>同心圆样式</label>
+                    <select id="ringStyle">
+                        <option value="solid">实线</option>
+                        <option value="dashed">虚线</option>
+                        <option value="dotted">点线</option>
+                        <option value="gradient">渐变</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>方位线样式</label>
+                    <select id="lineStyle">
+                        <option value="solid">实线</option>
+                        <option value="dashed">虚线</option>
+                        <option value="dotted">点线</option>
+                        <option value="thin">细线</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>中心点效果</label>
+                    <select id="centerStyle">
+                        <option value="glow">发光</option>
+                        <option value="pulse">脉冲</option>
+                        <option value="both">发光+脉冲</option>
+                        <option value="simple">简单</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 数据点控制 -->
+            <div class="control-panel">
+                <h3>数据点管理</h3>
+                
+                <div class="control-group">
+                    <div class="button-group">
+                        <button id="addRandomPoints" class="btn">添加随机点</button>
+                        <button id="clearPoints" class="btn">清除所有</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>点击地图添加数据点</label>
+                </div>
+            </div>
+            
+            <!-- 状态信息 -->
+            <div class="info-panel">
+                <h3>状态信息</h3>
+                
+                <div class="info-row">
+                    <span class="info-label">扫描状态:</span>
+                    <span class="info-value">
+                        <span id="scanStatus" class="status-indicator inactive"></span>
+                        <span id="scanStatusText">停止</span>
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">当前角度:</span>
+                    <span id="currentAngle" class="info-value">0°</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">数据点数量:</span>
+                    <span id="pointCount" class="info-value">0</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">已扫描点:</span>
+                    <span id="scannedCount" class="info-value">0</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">扫描完成:</span>
+                    <span id="scanComplete" class="info-value">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- 雷达扫描插件 JS -->
+    <script src="L.RadarScan.js"></script>
+    
+    <script>
+        // 初始化地图
+        const map = L.map('map').setView([39.9042, 116.4074], 14);
+        
+        // 添加地图图层
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // 创建雷达扫描实例
+        let radarScan = L.radarScan({
+            center: [39.9042, 116.4074],
+            radius: 1000,
+            sweepAngle: 60,
+            animationDuration: 3000,
+            classicMode: true,
+            showGrid: true,
+            showRangeRings: true,
+            showBearingLines: true,
+            rangeRings: 4,
+            bearingLines: 8,
+            radarColor: '#00ff00'
+        }).addTo(map);
+        
+        // 状态变量
+        let scannedPointsCount = 0;
+        let totalScansCompleted = 0;
+        
+        // 控制元素
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const displayModeSelect = document.getElementById('displayMode');
+        const speedSlider = document.getElementById('speedSlider');
+        const radiusSlider = document.getElementById('radiusSlider');
+        const angleSlider = document.getElementById('angleSlider');
+        const addRandomPointsBtn = document.getElementById('addRandomPoints');
+        const clearPointsBtn = document.getElementById('clearPoints');
+
+        // 样式控制元素
+        const colorThemeSelect = document.getElementById('colorTheme');
+        const backgroundStyleSelect = document.getElementById('backgroundStyle');
+        const ringStyleSelect = document.getElementById('ringStyle');
+        const lineStyleSelect = document.getElementById('lineStyle');
+        const centerStyleSelect = document.getElementById('centerStyle');
+        
+        // 显示元素
+        const speedValue = document.getElementById('speedValue');
+        const radiusValue = document.getElementById('radiusValue');
+        const angleValue = document.getElementById('angleValue');
+        const scanStatus = document.getElementById('scanStatus');
+        const scanStatusText = document.getElementById('scanStatusText');
+        const currentAngle = document.getElementById('currentAngle');
+        const pointCount = document.getElementById('pointCount');
+        const scannedCount = document.getElementById('scannedCount');
+        const scanComplete = document.getElementById('scanComplete');
+        
+        // 事件监听器
+        startBtn.addEventListener('click', () => {
+            radarScan.startScan();
+            updateScanStatus(true);
+        });
+        
+        stopBtn.addEventListener('click', () => {
+            radarScan.stopScan();
+            updateScanStatus(false);
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            radarScan.resetScan();
+            scannedPointsCount = 0;
+            updateDisplay();
+        });
+
+        displayModeSelect.addEventListener('change', (e) => {
+            const mode = e.target.value;
+            switch(mode) {
+                case 'full':
+                    radarScan.options.showRangeRings = true;
+                    radarScan.options.showBearingLines = true;
+                    break;
+                case 'rings':
+                    radarScan.options.showRangeRings = true;
+                    radarScan.options.showBearingLines = false;
+                    break;
+                case 'lines':
+                    radarScan.options.showRangeRings = false;
+                    radarScan.options.showBearingLines = true;
+                    break;
+                case 'none':
+                    radarScan.options.showRangeRings = false;
+                    radarScan.options.showBearingLines = false;
+                    break;
+            }
+            // 重新创建雷达以应用新设置
+            recreateRadar();
+        });
+
+        speedSlider.addEventListener('input', (e) => {
+            const duration = parseInt(e.target.value);
+            radarScan.options.animationDuration = duration;
+            speedValue.textContent = (duration / 1000).toFixed(1) + 's';
+        });
+
+        radiusSlider.addEventListener('input', (e) => {
+            const radius = parseInt(e.target.value);
+            radarScan.setRadius(radius);
+            radiusValue.textContent = radius + 'm';
+        });
+
+        angleSlider.addEventListener('input', (e) => {
+            const angle = parseInt(e.target.value);
+            radarScan.options.sweepAngle = angle;
+            angleValue.textContent = angle + '°';
+        });
+
+        // 样式控制事件
+        colorThemeSelect.addEventListener('change', (e) => {
+            applyColorTheme(e.target.value);
+        });
+
+        backgroundStyleSelect.addEventListener('change', (e) => {
+            applyBackgroundStyle(e.target.value);
+        });
+
+        ringStyleSelect.addEventListener('change', (e) => {
+            applyRingStyle(e.target.value);
+        });
+
+        lineStyleSelect.addEventListener('change', (e) => {
+            applyLineStyle(e.target.value);
+        });
+
+        centerStyleSelect.addEventListener('change', (e) => {
+            applyCenterStyle(e.target.value);
+        });
+
+        addRandomPointsBtn.addEventListener('click', () => {
+            addRandomDataPoints(10);
+        });
+
+        clearPointsBtn.addEventListener('click', () => {
+            radarScan.clearDataPoints();
+            scannedPointsCount = 0;
+            updateDisplay();
+        });
+
+        // 地图点击事件 - 添加数据点
+        map.on('click', (e) => {
+            const latlng = [e.latlng.lat, e.latlng.lng];
+            const data = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleTimeString(),
+                type: 'manual'
+            };
+
+            radarScan.addDataPoint(latlng, data);
+            updateDisplay();
+        });
+
+
+
+        // 重新创建雷达（用于更新网格设置）
+        function recreateRadar() {
+            const wasScanning = radarScan._isScanning;
+            const currentAngle = radarScan._currentAngle;
+            const dataPoints = [...radarScan._dataPoints];
+
+            // 移除当前雷达
+            map.removeLayer(radarScan);
+
+            // 创建新雷达
+            radarScan = L.radarScan(radarScan.options).addTo(map);
+
+            // 恢复数据点
+            dataPoints.forEach(pointData => {
+                radarScan.addDataPoint(pointData.latlng, pointData.data);
+            });
+
+            // 恢复状态
+            radarScan._currentAngle = currentAngle;
+            if (wasScanning) {
+                radarScan.startScan();
+            }
+
+            // 重新绑定事件
+            bindRadarEvents();
+        }
+
+        // 添加随机数据点
+        function addRandomDataPoints(count) {
+            const center = radarScan.options.center;
+            const radius = radarScan.options.radius;
+
+            for (let i = 0; i < count; i++) {
+                // 在雷达范围内生成随机点
+                const angle = Math.random() * 360;
+                const distance = Math.random() * radius * 0.8; // 80% 的半径内
+
+                const point = calculatePointAtDistance(center, distance, angle);
+                const data = {
+                    id: Date.now() + i,
+                    timestamp: new Date().toLocaleTimeString(),
+                    type: 'random',
+                    value: Math.floor(Math.random() * 100)
+                };
+
+                radarScan.addDataPoint(point, data);
+            }
+
+            updateDisplay();
+        }
+
+        // 计算指定距离和角度的点
+        function calculatePointAtDistance(center, distance, bearing) {
+            const lat1 = center[0] * Math.PI / 180;
+            const lng1 = center[1] * Math.PI / 180;
+            const bearingRad = bearing * Math.PI / 180;
+            const earthRadius = 6371000;
+
+            const lat2 = Math.asin(
+                Math.sin(lat1) * Math.cos(distance / earthRadius) +
+                Math.cos(lat1) * Math.sin(distance / earthRadius) * Math.cos(bearingRad)
+            );
+
+            const lng2 = lng1 + Math.atan2(
+                Math.sin(bearingRad) * Math.sin(distance / earthRadius) * Math.cos(lat1),
+                Math.cos(distance / earthRadius) - Math.sin(lat1) * Math.sin(lat2)
+            );
+
+            return [lat2 * 180 / Math.PI, lng2 * 180 / Math.PI];
+        }
+
+        // 样式应用函数
+        function applyColorTheme(theme) {
+            const themes = {
+                green: '#00ff00',
+                blue: '#00aaff',
+                red: '#ff4444',
+                orange: '#ff8800',
+                purple: '#aa44ff'
+            };
+
+            const color = themes[theme];
+            if (!color) return;
+
+            radarScan.updateAllStyles({
+                backgroundCircle: {
+                    stroke: color,
+                    fill: `rgba(${hexToRgb(color).r}, ${hexToRgb(color).g}, ${hexToRgb(color).b}, 0.1)`
+                },
+                rangeRings: {
+                    stroke: color
+                },
+                bearingLines: {
+                    stroke: color
+                },
+                centerPoint: {
+                    fill: color,
+                    glow: { color: color }
+                }
+            });
+        }
+
+        function applyBackgroundStyle(style) {
+            const styles = {
+                solid: { strokeDasharray: null, strokeWidth: 2 },
+                dashed: { strokeDasharray: '10,5', strokeWidth: 2 },
+                dotted: { strokeDasharray: '2,3', strokeWidth: 2 },
+                thick: { strokeDasharray: null, strokeWidth: 4 }
+            };
+
+            if (styles[style]) {
+                radarScan.updateBackgroundCircleStyle(styles[style]);
+            }
+        }
+
+        function applyRingStyle(style) {
+            const styles = {
+                solid: { strokeDasharray: null, strokeWidth: 1, opacity: 0.6 },
+                dashed: { strokeDasharray: '5,3', strokeWidth: 1, opacity: 0.6 },
+                dotted: { strokeDasharray: '1,2', strokeWidth: 1, opacity: 0.6 },
+                gradient: {
+                    strokeDasharray: null,
+                    strokeWidth: 1,
+                    individualStyles: [
+                        { opacity: 0.8 },
+                        { opacity: 0.6 },
+                        { opacity: 0.4 },
+                        { opacity: 0.2 }
+                    ]
+                }
+            };
+
+            if (styles[style]) {
+                radarScan.updateRangeRingStyle(styles[style]);
+            }
+        }
+
+        function applyLineStyle(style) {
+            const styles = {
+                solid: { strokeDasharray: null, strokeWidth: 1, opacity: 0.5 },
+                dashed: { strokeDasharray: '3,2', strokeWidth: 1, opacity: 0.5 },
+                dotted: { strokeDasharray: '1,1', strokeWidth: 1, opacity: 0.5 },
+                thin: { strokeDasharray: null, strokeWidth: 0.5, opacity: 0.3 }
+            };
+
+            if (styles[style]) {
+                radarScan.updateBearingLineStyle(styles[style]);
+            }
+        }
+
+        function applyCenterStyle(style) {
+            const styles = {
+                glow: {
+                    glow: { enabled: true, blur: 8, color: radarScan.options.radarColor },
+                    pulse: { enabled: false }
+                },
+                pulse: {
+                    glow: { enabled: false },
+                    pulse: { enabled: true, duration: 2000, minOpacity: 0.3, maxOpacity: 1 }
+                },
+                both: {
+                    glow: { enabled: true, blur: 8, color: radarScan.options.radarColor },
+                    pulse: { enabled: true, duration: 2000, minOpacity: 0.3, maxOpacity: 1 }
+                },
+                simple: {
+                    glow: { enabled: false },
+                    pulse: { enabled: false }
+                }
+            };
+
+            if (styles[style]) {
+                radarScan.updateCenterPointStyle(styles[style]);
+            }
+        }
+
+        // 辅助函数：十六进制颜色转 RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        // 绑定雷达事件（用于重新创建后）
+        function bindRadarEvents() {
+            radarScan.on('scanstart', () => {
+                console.log('雷达扫描开始');
+                updateScanStatus(true);
+            });
+
+            radarScan.on('scanstop', () => {
+                console.log('雷达扫描停止');
+                updateScanStatus(false);
+            });
+
+            radarScan.on('scancomplete', () => {
+                console.log('雷达扫描完成一轮');
+                totalScansCompleted++;
+                updateDisplay();
+            });
+
+            radarScan.on('pointscanned', (e) => {
+                console.log('数据点被扫描:', e.data);
+                scannedPointsCount++;
+                updateDisplay();
+
+                // 为被扫描的点添加特殊样式
+                if (e.marker) {
+                    e.marker.setStyle({
+                        color: '#ffff00',
+                        fillColor: '#ffff00'
+                    });
+
+                    // 2秒后恢复原样式
+                    setTimeout(() => {
+                        e.marker.setStyle(radarScan.options.pointOptions);
+                    }, 2000);
+                }
+            });
+        }
+
+        // 更新扫描状态显示
+        function updateScanStatus(isScanning) {
+            if (isScanning) {
+                scanStatus.className = 'status-indicator active';
+                scanStatusText.textContent = '扫描中';
+                startBtn.classList.remove('active');
+                stopBtn.classList.add('active');
+            } else {
+                scanStatus.className = 'status-indicator inactive';
+                scanStatusText.textContent = '停止';
+                startBtn.classList.add('active');
+                stopBtn.classList.remove('active');
+            }
+        }
+
+        // 更新显示信息
+        function updateDisplay() {
+            pointCount.textContent = radarScan._dataPoints.length;
+            scannedCount.textContent = scannedPointsCount;
+            scanComplete.textContent = totalScansCompleted;
+        }
+
+        // 实时更新当前角度
+        function updateAngleDisplay() {
+            if (radarScan._isScanning) {
+                const angle = Math.round(radarScan._currentAngle);
+                currentAngle.textContent = angle + '°';
+            }
+            requestAnimationFrame(updateAngleDisplay);
+        }
+
+        // 绑定初始雷达事件
+        bindRadarEvents();
+
+        // 初始化显示
+        updateDisplay();
+        updateAngleDisplay();
+
+        // 添加一些初始数据点作为演示
+        setTimeout(() => {
+            addRandomDataPoints(5);
+        }, 1000);
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ': // 空格键 - 开始/停止扫描
+                    e.preventDefault();
+                    if (radarScan._isScanning) {
+                        radarScan.stopScan();
+                    } else {
+                        radarScan.startScan();
+                    }
+                    break;
+                case 'r': // R键 - 重置
+                    radarScan.resetScan();
+                    scannedPointsCount = 0;
+                    updateDisplay();
+                    break;
+                case 'c': // C键 - 清除数据点
+                    radarScan.clearDataPoints();
+                    scannedPointsCount = 0;
+                    updateDisplay();
+                    break;
+                case 'a': // A键 - 添加随机点
+                    addRandomDataPoints(5);
+                    break;
+            }
+        });
+
+        // 添加帮助信息
+        console.log('键盘快捷键:');
+        console.log('空格键: 开始/停止扫描');
+        console.log('R: 重置扫描');
+        console.log('C: 清除所有数据点');
+        console.log('A: 添加随机数据点');
+        console.log('点击地图: 添加数据点');
+    </script>
+</body>
+</html>

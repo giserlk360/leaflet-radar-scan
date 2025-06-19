@@ -1,0 +1,25 @@
+{
+  "name": "leaflet-radar-scan",
+  "version": "1.0.0",
+  "description": "一个功能强大的 Leaflet 插件，用于创建逼真的雷达扫描效果",
+  "main": "L.RadarScan.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "leaflet",
+    "map",
+    "radar",
+    "scan",
+    "visualization"
+  ],
+  "author": "likang",
+  "license": "MIT",
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giserlk360/leaflet-radar-scan.git"
+  }
+}
