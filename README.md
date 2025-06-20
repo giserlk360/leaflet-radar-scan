@@ -4,6 +4,8 @@ A powerful Leaflet plugin for creating realistic radar scanning effects. Feature
 
 ## Demo
 
+**[Live Demo](https://giserlk360.github.io/leaflet-radar-scan)** - Try it now!
+
 ![Radar Scanning Effect](radarscan.gif)
 
 ## Installation
