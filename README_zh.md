@@ -1,65 +1,65 @@
-# L.RadarScan - Radar Scanning Plugin
+# L.RadarScan - 雷达扫描插件
 
-A powerful Leaflet plugin for creating realistic radar scanning effects. Features classic radar screen display, data point detection, rich style customization, and map zoom adaptation.
+一个功能强大的 Leaflet 插件，用于创建逼真的雷达扫描效果。支持经典雷达屏幕显示、数据点检测、丰富的样式定制和地图缩放自适应。
 
-## Demo
+## 效果展示
 
-![Radar Scanning Effect](radarscan.gif)
+![雷达扫描效果](radarscan.gif)
 
-## Installation
+### 安装
 
-### Method 1: Direct Download
+#### 方法一：直接下载
 
-1. Download plugin files:
-   - `L.RadarScan.js` - Core plugin file
-   - `L.RadarScan.css` - Style file
+1. 下载插件文件：
+   - `L.RadarScan.js` - 核心插件文件
+   - `L.RadarScan.css` - 样式文件
 
-2. Include in HTML:
+2. 在 HTML 中引入：
 
 ```html
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<!-- Radar Scan Plugin CSS -->
+<!-- 雷达扫描插件 CSS -->
 <link rel="stylesheet" href="L.RadarScan.css" />
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- Radar Scan Plugin JS -->
+<!-- 雷达扫描插件 JS -->
 <script src="L.RadarScan.js"></script>
 ```
 
-### Method 2: Using npm
+#### 方法二：使用 npm
 
-1. Install the plugin:
+1. 安装插件：
 
 ```bash
 npm install leaflet-radar-scan
 ```
 
-2. Import in your project:
+2. 在项目中引入：
 
 ```javascript
-// Import Leaflet
+// 引入 Leaflet
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Import radar scan plugin
+// 引入雷达扫描插件
 import 'leaflet-radar-scan';
 import 'leaflet-radar-scan/L.RadarScan.css';
 ```
 
-## Basic Usage
+### 基础使用
 
 ```javascript
-// Create map
+// 创建地图
 const map = L.map('map').setView([39.9042, 116.4074], 12);
 
-// Add tile layer
+// 添加地图图层
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// Create radar scan
+// 创建雷达扫描
 const radarScan = L.radarScan({
     center: [39.9042, 116.4074],
     radius: 2000,
@@ -67,16 +67,16 @@ const radarScan = L.radarScan({
     animationDuration: 3000
 }).addTo(map);
 
-// Add data point
-radarScan.addDataPoint([39.9042, 116.4074], { id: 1, name: 'Target 1' });
+// 添加数据点
+radarScan.addDataPoint([39.9042, 116.4074], { id: 1, name: '目标1' });
 
-// Start scanning
+// 开始扫描
 radarScan.startScan();
 ```
 
-## Style Customization
+## 样式定制
 
-### Background Circle Style
+### 外圆（背景圆）样式
 
 ```javascript
 const radarScan = L.radarScan({
@@ -84,14 +84,14 @@ const radarScan = L.radarScan({
         fill: 'rgba(0, 20, 0, 0.9)',
         stroke: '#00ff00',
         strokeWidth: 2,
-        strokeDasharray: '10,5', // Dash pattern
+        strokeDasharray: '10,5', // 虚线样式
         opacity: 0.8,
         radius: 45
     }
 });
 ```
 
-### Range Rings Style
+### 同心圆样式
 
 ```javascript
 const radarScan = L.radarScan({
@@ -101,7 +101,7 @@ const radarScan = L.radarScan({
         strokeDasharray: '5,3',
         opacity: 0.6,
         fill: 'none',
-        // Individual styles for each ring
+        // 为每个圆圈设置不同样式
         individualStyles: [
             { opacity: 0.8 },
             { opacity: 0.6 },
@@ -112,7 +112,7 @@ const radarScan = L.radarScan({
 });
 ```
 
-### Bearing Lines Style
+### 方位线样式
 
 ```javascript
 const radarScan = L.radarScan({
@@ -123,7 +123,7 @@ const radarScan = L.radarScan({
         opacity: 0.5,
         innerRadius: 5,
         outerRadius: 45,
-        // Individual styles for each line
+        // 为每条线设置不同样式
         individualStyles: [
             { stroke: '#ff0000' },
             { stroke: '#00ff00' }
@@ -132,7 +132,7 @@ const radarScan = L.radarScan({
 });
 ```
 
-### Center Point Style
+### 中心点样式
 
 ```javascript
 const radarScan = L.radarScan({
@@ -142,14 +142,14 @@ const radarScan = L.radarScan({
         strokeWidth: 1,
         radius: 3,
         opacity: 1,
-        // Glow effect
+        // 发光效果
         glow: {
             enabled: true,
             color: '#00ff00',
             blur: 5,
             spread: 0
         },
-        // Pulse effect
+        // 脉冲效果
         pulse: {
             enabled: true,
             duration: 2000,
@@ -160,60 +160,60 @@ const radarScan = L.radarScan({
 });
 ```
 
-### Sweep Sector Style
+### 扫描扇形样式
 
 ```javascript
 const radarScan = L.radarScan({
     sweepOptions: {
         color: '#00ff00',
         opacity: 0.6,
-        // Gradient configuration
+        // 渐变配置
         gradient: {
             enabled: true,
             centerOpacity: 0.8,
             edgeOpacity: 0,
             type: 'radial'
         },
-        // Trail effect
+        // 尾迹效果
         trail: {
             enabled: true,
-            length: 90, // Trail length in degrees
+            length: 90, // 尾迹长度（度）
             opacity: 0.3
         }
     }
 });
 ```
 
-### Individual Color Settings
+### 独立颜色设置
 
-Each radar element can be styled independently:
+每个雷达元素都可以单独设置颜色：
 
 ```javascript
-// Set background circle color individually
+// 单独设置外圆颜色
 radarScan.updateBackgroundCircleStyle({
-    stroke: '#ff0000'  // Red background circle
+    stroke: '#ff0000'  // 红色外圆
 });
 
-// Set range rings color individually
+// 单独设置同心圆颜色
 radarScan.updateRangeRingStyle({
-    stroke: '#00ff00'  // Green range rings
+    stroke: '#00ff00'  // 绿色同心圆
 });
 
-// Set bearing lines color individually
+// 单独设置方位线颜色
 radarScan.updateBearingLineStyle({
-    stroke: '#0000ff'  // Blue bearing lines
+    stroke: '#0000ff'  // 蓝色方位线
 });
 
-// Set center point color individually
+// 单独设置中心点颜色
 radarScan.updateCenterPointStyle({
-    fill: '#ffff00',           // Yellow fill
-    glow: { color: '#ffff00' } // Yellow glow
+    fill: '#ffff00',           // 黄色填充
+    glow: { color: '#ffff00' } // 黄色发光
 });
 
-// Set sweep sector color individually
+// 单独设置扫描扇形颜色
 radarScan.updateSweepStyle({
-    color: '#ff00ff',          // Purple sweep sector
-    opacity: 0.7,              // Opacity
+    color: '#ff00ff',          // 紫色扫描扇形
+    opacity: 0.7,              // 透明度
     gradient: {
         enabled: true,
         centerOpacity: 0.9,
@@ -221,7 +221,7 @@ radarScan.updateSweepStyle({
     }
 });
 
-// Batch set different colors
+// 批量设置不同颜色
 radarScan.updateAllStyles({
     backgroundCircle: { stroke: '#ff4444' },
     rangeRings: { stroke: '#44ff44' },
@@ -237,79 +237,79 @@ radarScan.updateAllStyles({
 });
 ```
 
-## API Reference
+## API 参考
 
-### Constructor
+### 构造函数
 
 ```javascript
 L.radarScan(options)
 ```
 
-### Main Configuration Options
+### 主要配置选项
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `center` | Array | null | Radar center coordinates [lat, lng] |
-| `radius` | Number | 1000 | Scan radius in meters |
-| `sweepAngle` | Number | 60 | Sweep sector angle in degrees |
-| `animationDuration` | Number | 3000 | Time for one complete scan in milliseconds |
-| `showGrid` | Boolean | true | Whether to show grid |
-| `showRangeRings` | Boolean | true | Whether to show range rings |
-| `showBearingLines` | Boolean | true | Whether to show bearing lines |
-| `rangeRings` | Number | 4 | Number of range rings |
-| `bearingLines` | Number | 8 | Number of bearing lines |
-| `radarColor` | String | '#00ff00' | Main radar color |
+| 选项 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `center` | Array | null | 雷达中心点坐标 [lat, lng] |
+| `radius` | Number | 1000 | 扫描半径（米） |
+| `sweepAngle` | Number | 60 | 扫描扇形角度（度） |
+| `animationDuration` | Number | 3000 | 一圈扫描时间（毫秒） |
+| `showGrid` | Boolean | true | 是否显示网格 |
+| `showRangeRings` | Boolean | true | 是否显示同心圆 |
+| `showBearingLines` | Boolean | true | 是否显示方位线 |
+| `rangeRings` | Number | 4 | 同心圆数量 |
+| `bearingLines` | Number | 8 | 方位线数量 |
+| `radarColor` | String | '#00ff00' | 雷达主色调 |
 
-### Methods
+### 方法
 
-#### Scan Control
+#### 扫描控制
 
 ```javascript
-radarScan.startScan()        // Start scanning
-radarScan.stopScan()         // Stop scanning
-radarScan.resetScan()        // Reset scan state
+radarScan.startScan()        // 开始扫描
+radarScan.stopScan()         // 停止扫描
+radarScan.resetScan()        // 重置扫描状态
 ```
 
-#### Data Point Management
+#### 数据点管理
 
 ```javascript
-// Add data point
+// 添加数据点
 const marker = radarScan.addDataPoint([lat, lng], data, options);
 
-// Remove data point
+// 移除数据点
 radarScan.removeDataPoint(marker);
 
-// Clear all data points
+// 清除所有数据点
 radarScan.clearDataPoints();
 ```
 
-#### Style Updates
+#### 样式更新
 
 ```javascript
-// Update background circle style
+// 更新背景圆样式
 radarScan.updateBackgroundCircleStyle({
     stroke: '#ff0000',
     strokeWidth: 3
 });
 
-// Update range rings style
+// 更新同心圆样式
 radarScan.updateRangeRingStyle({
     stroke: '#0000ff',
     opacity: 0.8
 });
 
-// Update bearing lines style
+// 更新方位线样式
 radarScan.updateBearingLineStyle({
     strokeDasharray: '5,5'
 });
 
-// Update center point style
+// 更新中心点样式
 radarScan.updateCenterPointStyle({
     radius: 5,
     glow: { enabled: true, blur: 8 }
 });
 
-// Update sweep style
+// 更新扫描扇形样式
 radarScan.updateSweepStyle({
     color: '#ff00ff',
     opacity: 0.8,
@@ -320,7 +320,7 @@ radarScan.updateSweepStyle({
     }
 });
 
-// Batch update all styles
+// 批量更新所有样式
 radarScan.updateAllStyles({
     backgroundCircle: { stroke: '#ff0000' },
     rangeRings: { opacity: 0.8 },
@@ -333,46 +333,42 @@ radarScan.updateAllStyles({
 });
 ```
 
-#### Configuration Management
+#### 配置管理
 
 ```javascript
-// Get current style configuration
+// 获取当前样式配置
 const config = radarScan.getStyleConfig();
 
-// Set center point and radius
+// 设置中心点和半径
 radarScan.setCenter([lat, lng]);
 radarScan.setRadius(3000);
 ```
 
-### Events
+### 事件
 
 ```javascript
 radarScan.on('scanstart', function() {
-    console.log('Scan started');
+    console.log('扫描开始');
 });
 
 radarScan.on('scanstop', function() {
-    console.log('Scan stopped');
+    console.log('扫描停止');
 });
 
 radarScan.on('scancomplete', function() {
-    console.log('Scan cycle completed');
+    console.log('完成一轮扫描');
 });
 
 radarScan.on('pointscanned', function(e) {
-    console.log('Point scanned:', e.point, e.data);
+    console.log('扫描到数据点:', e.point, e.data);
 });
 ```
 
-## 📄 License
+## 📄 许可证
 
 MIT License
 
-## 🤝 Contributing
+## 🤝 贡献
 
-Issues and Pull Requests are welcome!
+欢迎提交 Issue 和 Pull Request！
 
-## 🌐 Language
-
-- [中文文档](README_zh.md)
-- [English Documentation](README.md)
