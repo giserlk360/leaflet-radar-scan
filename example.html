@@ -376,9 +376,11 @@
         // 初始化地图
         const map = L.map('map').setView([39.9042, 116.4074], 14);
         
-        // 添加地图图层
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+        // 添加暗色地图图层
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
         }).addTo(map);
         
         // 创建雷达扫描实例
@@ -632,6 +634,9 @@
                 centerPoint: {
                     fill: color,
                     glow: { color: color }
+                },
+                sweep: {
+                    color: color
                 }
             });
         }
