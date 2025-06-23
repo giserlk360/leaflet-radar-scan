@@ -143,10 +143,16 @@
         },
 
         initialize: function (options) {
+            // 先设置默认选项
             L.setOptions(this, options);
             
             if (!this.options.center) {
                 throw new Error('RadarScan requires a center point');
+            }
+            
+            // 如果设置了radarColor，应用到所有相关颜色配置
+            if (this.options.radarColor) {
+                this._applyRadarColor(this.options.radarColor);
             }
             
             // 内部状态
@@ -1035,7 +1041,69 @@
                 centerPoint: this.options.centerPointOptions,
                 sweep: this.options.sweepOptions
             };
-        }
+        },
+
+        // 获取雷达扫描的边界
+        getBounds: function() {
+            // 如果已经计算了边界，直接返回
+            if (this._bounds) {
+                return this._bounds;
+            }
+            
+            // 如果尚未计算边界，手动计算一次
+            this._updateBounds();
+            return this._bounds;
+        },
+
+        // 设置雷达全局颜色
+        setRadarColor: function(color) {
+            this.options.radarColor = color;
+            this._applyRadarColor(color);
+            
+            // 如果雷达已经创建，更新现有元素的样式
+            if (this._svgElement) {
+                this.updateAllStyles({
+                    backgroundCircle: { stroke: color },
+                    rangeRings: { stroke: color },
+                    bearingLines: { stroke: color },
+                    centerPoint: {
+                        fill: color,
+                        glow: { color: color }
+                    },
+                    sweep: { color: color }
+                });
+            }
+            
+            return this;
+        },
+
+        // 应用雷达颜色到所有相关配置
+        _applyRadarColor: function(color) {
+            // 更新扫描光束颜色
+            this.options.sweepOptions.color = color;
+            if (this.options.sweepOptions.gradient && this.options.sweepOptions.gradient.enabled) {
+                this.options.sweepOptions.gradient.color = color;
+            }
+            
+            // 更新背景圆颜色
+            this.options.backgroundCircleOptions.stroke = color;
+            
+            // 更新同心圆颜色
+            this.options.rangeRingOptions.stroke = color;
+            
+            // 更新方位线颜色
+            this.options.bearingLineOptions.stroke = color;
+            
+            // 更新中心点颜色
+            this.options.centerPointOptions.fill = color;
+            if (this.options.centerPointOptions.glow && this.options.centerPointOptions.glow.enabled) {
+                this.options.centerPointOptions.glow.color = color;
+            }
+            
+            // 更新数据点颜色
+            this.options.pointOptions.color = color;
+            this.options.pointOptions.fillColor = color;
+        },
     });
 
     L.radarScan = function (options) {
@@ -1043,3 +1111,6 @@
     };
 
 })(window, document);
+
+
+
